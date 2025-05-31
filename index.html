@@ -1,0 +1,970 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
+<title>Blink Twice - If you like it, print it twice!</title>
+<style>
+  /* Import Google Fonts */
+  @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&family=Pacifico&display=swap');
+
+  :root {
+    --blue: #3b82f6;
+    --pink: #ec4899;
+    --dark-bg: #0f172a;
+    --light-bg: #f9fafb;
+    --text-light: #f3f4f6;
+    --text-dark: #111827;
+    --focus-color: #f472b6; /* pink */
+  }
+
+  * {
+    box-sizing: border-box;
+  }
+
+  body {
+    margin: 0;
+    background: var(--dark-bg);
+    color: var(--text-light);
+    font-family: 'Poppins', sans-serif;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  h1.site-title {
+    font-family: 'Pacifico', cursive;
+    font-size: clamp(2.5rem, 5vw, 3.5rem);
+    background: linear-gradient(90deg, var(--pink), var(--blue));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin: 1rem 0 0.2rem 0;
+    text-align: center;
+    user-select: none;
+  }
+
+  p.motto {
+    font-weight: 600;
+    font-size: clamp(1rem, 2vw, 1.3rem);
+    color: var(--pink);
+    text-align: center;
+    margin: 0 0 2rem 0;
+    user-select: none;
+  }
+
+  #app {
+    width: 100%;
+    max-width: 480px;
+    background: #1e293b;
+    border-radius: 12px;
+    box-shadow: 0 8px 24px rgb(236 72 153 / 0.3), 0 4px 16px rgb(59 130 246 / 0.3);
+    padding: 1.5rem 2rem 2rem 2rem;
+    margin-bottom: 3rem;
+    min-height: 600px;
+    display: flex;
+    flex-direction: column;
+    outline: none;
+  }
+
+  /* Navigation Buttons on top */
+  .nav-buttons {
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+  .nav-buttons button {
+    background: transparent;
+    border: 2px solid var(--pink);
+    border-radius: 25px;
+    padding: 0.6rem 1.4rem;
+    color: var(--pink);
+    text-transform: uppercase;
+    font-weight: 600;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: background-color 0.3s ease, color 0.3s ease;
+  }
+  .nav-buttons button:hover,
+  .nav-buttons button:focus {
+    background-color: var(--pink);
+    color: var(--dark-bg);
+    outline: none;
+  }
+  .nav-buttons button:focus-visible {
+    outline: 3px solid var(--focus-color);
+    outline-offset: 2px;
+  }
+
+  /* Pages container, only one visible at a time */
+  .page {
+    flex-grow: 1;
+    display: none;
+    flex-direction: column;
+    overflow-y: auto;
+  }
+  .page.active {
+    display: flex;
+  }
+
+  /* Login/Signup forms */
+  form {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+  label {
+    font-weight: 600;
+    font-size: 1rem;
+  }
+  input[type="email"],
+  input[type="password"],
+  input[type="text"],
+  input[type="tel"],
+  select {
+    padding: 0.65rem 1rem;
+    border-radius: 6px;
+    border: none;
+    font-size: 1rem;
+  }
+  input[type="email"]:focus,
+  input[type="password"]:focus,
+  input[type="text"]:focus,
+  input[type="tel"]:focus,
+  select:focus {
+    outline: 3px solid var(--pink);
+  }
+  button.submit-btn {
+    margin-top: 1rem;
+    background-color: var(--pink);
+    border: none;
+    border-radius: 25px;
+    padding: 0.9rem;
+    color: var(--dark-bg);
+    font-weight: 700;
+    font-size: 1.1rem;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+  button.submit-btn:hover,
+  button.submit-btn:focus {
+    background-color: var(--blue);
+    color: var(--text-light);
+    outline: none;
+  }
+  button.submit-btn:focus-visible {
+    outline: 3px solid var(--focus-color);
+    outline-offset: 3px;
+  }
+  .form-footer {
+    text-align: center;
+    margin-top: 0.8rem;
+    color: var(--text-light);
+    font-size: 1rem;
+  }
+  .form-footer a {
+    color: var(--pink);
+    cursor: pointer;
+    text-decoration: none;
+    font-weight: 600;
+  }
+  .form-footer a:hover,
+  .form-footer a:focus-visible {
+    text-decoration: underline;
+    outline-offset: 2px;
+  }
+
+  /* Camera & Filters page */
+  #camera-page {
+    align-items: center;
+    overflow: hidden;
+  }
+  video, canvas {
+    border-radius: 10px;
+    max-width: 100%;
+    max-height: 350px;
+    box-shadow: 0 4px 16px rgba(236, 72, 153, 0.5);
+    background: var(--dark-bg);
+  }
+  video {
+    aspect-ratio: 4 / 3;
+    object-fit: cover;
+  }
+  .camera-buttons {
+    margin-top: 1.2rem;
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  .camera-buttons button {
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: 25px;
+    cursor: pointer;
+    font-weight: 600;
+    background: var(--pink);
+    color: var(--dark-bg);
+    transition: background-color 0.3s ease;
+    min-width: 120px;
+  }
+  .camera-buttons button:hover,
+  .camera-buttons button:focus {
+    background: var(--blue);
+    color: var(--text-light);
+    outline: none;
+  }
+  .camera-buttons button:focus-visible {
+    outline: 3px solid var(--focus-color);
+    outline-offset: 2px;
+  }
+
+  /* Filters selection */
+  .filters {
+    margin-top: 1rem;
+    display: flex;
+    gap: 0.8rem;
+    overflow-x: auto;
+    padding-bottom: 0.5rem;
+    justify-content: start;
+  }
+  .filters button {
+    flex: 0 0 auto;
+    padding: 0.6rem 1rem;
+    border-radius: 20px;
+    border: 2px solid transparent;
+    font-weight: 600;
+    cursor: pointer;
+    background: var(--pink);
+    color: var(--dark-bg);
+    transition: border-color 0.3s ease, background-color 0.3s ease;
+    min-width: 80px;
+  }
+  .filters button:hover,
+  .filters button:focus {
+    background: var(--blue);
+    color: var(--text-light);
+    outline: none;
+  }
+  .filters button:focus-visible {
+    outline: 3px solid var(--focus-color);
+    outline-offset: 2px;
+  }
+  .filters button.active {
+    border-color: var(--blue);
+    background: transparent;
+    color: var(--blue);
+    font-weight: 700;
+  }
+
+  /* Payment page */
+  #payment-page {
+    flex-direction: column;
+  }
+  #payment-page h2 {
+    color: var(--pink);
+    text-align: center;
+    margin-bottom: 1.2rem;
+  }
+  #payment-selfie-preview {
+    max-width: 200px; 
+    margin: 0 auto 1rem auto; 
+    border-radius: 12px; 
+    display: block;
+  }
+  .payment-section {
+    margin-bottom: 1.5rem;
+  }
+  .payment-options label,
+  .payment-methods label {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    background: #334155;
+    padding: 1rem 1.2rem;
+    border-radius: 12px;
+    margin-bottom: 1rem;
+    cursor: pointer;
+    font-weight: 600;
+    user-select: none;
+  }
+  .payment-options input[type="radio"],
+  .payment-methods input[type="radio"] {
+    accent-color: var(--pink);
+    width: 20px;
+    height: 20px;
+  }
+  form.payment-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+  form.payment-form label {
+    font-weight: 500;
+    font-size: 1rem;
+  }
+  form.payment-form input,
+  form.payment-form select {
+    padding: 0.6rem 1rem;
+    border-radius: 6px;
+    border: none;
+    font-size: 1rem;
+  }
+  form.payment-form input:focus,
+  form.payment-form select:focus {
+    outline: 3px solid var(--pink);
+  }
+  button.pay-btn {
+    background: var(--blue);
+    font-weight: 700;
+    border-radius: 25px;
+    border: none;
+    padding: 1rem;
+    color: var(--text-light);
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    width: 100%;
+    max-width: 250px;
+    align-self: center;
+  }
+  button.pay-btn:hover,
+  button.pay-btn:focus {
+    background: var(--pink);
+    outline: none;
+  }
+  button.pay-btn:focus-visible {
+    outline: 3px solid var(--focus-color);
+    outline-offset: 2px;
+  }
+
+  /* User greeting and logout */
+  #user-info {
+    color: var(--pink);
+    font-weight: 600;
+    font-size: 1.1rem;
+    margin-bottom: 1rem;
+    text-align: center;
+    user-select: none;
+  }
+
+  /* Success and error messages */
+  .success-message {
+    background-color: #16a34a;
+    color: white;
+    font-weight: 600;
+    padding: 1rem;
+    border-radius: 12px;
+    text-align: center;
+    margin-top: 1rem;
+    user-select: none;
+  }
+  .error-message {
+    background-color: #dc2626;
+    color: white;
+    font-weight: 600;
+    padding: 1rem;
+    border-radius: 12px;
+    text-align: center;
+    margin-top: 1rem;
+    user-select: none;
+  }
+
+  /* Scrollbar styling for filters */
+  .filters::-webkit-scrollbar {
+    height: 8px;
+  }
+  .filters::-webkit-scrollbar-thumb {
+    background: var(--pink);
+    border-radius: 4px;
+  }
+
+  /* Responsive adjustments */
+  @media (max-width: 500px) {
+    #app {
+      padding: 1rem 1.2rem 1.5rem 1.2rem;
+      min-height: 560px;
+    }
+    .camera-buttons {
+      flex-direction: column;
+    }
+    .camera-buttons button {
+      width: 100%;
+      min-width: unset;
+    }
+    .filters {
+      gap: 0.5rem;
+    }
+    .filters button {
+      padding: 0.5rem 0.9rem;
+      min-width: 70px;
+      font-size: 0.9rem;
+    }
+  }
+</style>
+</head>
+<body>
+  <h1 class="site-title" tabindex="0">Blink Twice</h1>
+  <p class="motto" tabindex="0">If you like it, print it twice!</p>
+
+  <main id="app" role="main" aria-live="polite" tabindex="-1">
+    <nav class="nav-buttons" aria-label="Primary navigation" id="nav-buttons">
+      <!-- Buttons rendered dynamically -->
+    </nav>
+
+    <section id="user-info" role="region" aria-live="polite" style="display:none;"></section>
+
+    <!-- Login Page -->
+    <section id="login-page" class="page" role="region" aria-label="Login form">
+      <form id="login-form" aria-describedby="login-error" novalidate>
+        <label for="login-email">Email</label>
+        <input type="email" id="login-email" autocomplete="username" required aria-required="true" placeholder="your.email@example.com"/>
+        <label for="login-password">Password</label>
+        <input type="password" id="login-password" autocomplete="current-password" required aria-required="true" placeholder="Enter password"/>
+        <button type="submit" class="submit-btn" aria-label="Log in">Log In</button>
+      </form>
+      <div class="form-footer">
+        Don't have an account? <a href="#" id="to-signup-link" role="link" aria-label="Go to sign up page">Sign up</a>
+      </div>
+      <div id="login-error" class="error-message" role="alert" style="display:none;"></div>
+    </section>
+
+    <!-- Signup Page -->
+    <section id="signup-page" class="page" role="region" aria-label="Sign up form">
+      <form id="signup-form" aria-describedby="signup-error signup-success" novalidate>
+        <label for="signup-name">Name</label>
+        <input type="text" id="signup-name" autocomplete="name" required aria-required="true" placeholder="Your Name" minlength="2" />
+        <label for="signup-email">Email</label>
+        <input type="email" id="signup-email" autocomplete="email" required aria-required="true" placeholder="your.email@example.com"/>
+        <label for="signup-password">Password</label>
+        <input type="password" id="signup-password" autocomplete="new-password" required aria-required="true" placeholder="Create password" minlength="6" />
+        <button type="submit" class="submit-btn" aria-label="Sign up">Sign Up</button>
+      </form>
+      <div class="form-footer">
+        Already have an account? <a href="#" id="to-login-link" role="link" aria-label="Go to login page">Log in</a>
+      </div>
+      <div id="signup-error" class="error-message" role="alert" style="display:none;"></div>
+      <div id="signup-success" class="success-message" role="alert" style="display:none;"></div>
+    </section>
+
+    <!-- Camera & Filters Page -->
+    <section id="camera-page" class="page" role="region" aria-label="Camera and filters">
+      <video id="video" autoplay playsinline aria-label="Camera preview"></video>
+      <canvas id="canvas" style="display:none;" aria-hidden="true"></canvas>
+      <div class="camera-buttons" role="group" aria-label="Camera controls">
+        <button id="capture-btn" aria-label="Take selfie">Take Selfie</button>
+        <button id="retake-btn" style="display:none;" aria-label="Retake the selfie">Retake</button>
+        <button id="to-payment-btn" style="display:none;" aria-label="Proceed to payment">Proceed to Payment</button>
+      </div>
+      <div class="filters" id="filters" role="list" aria-label="Available filters">
+        <!-- Filter buttons populated by JS -->
+      </div>
+    </section>
+
+    <!-- Payment Page -->
+    <section id="payment-page" class="page" role="region" aria-label="Payment page">
+      <h2 tabindex="0">Print Your Selfie</h2>
+      <img id="payment-selfie-preview" alt="Preview of your selfie with selected filter" />
+      
+      <div class="payment-section" aria-label="Choose print size">
+        <p style="font-weight:600; margin-bottom: 0.5rem; color: var(--pink);">Select Print Size</p>
+        <form class="payment-options" role="radiogroup" aria-label="Choose print size">
+          <label for="print-4x6">
+            <input type="radio" id="print-4x6" name="print-option" value="4x6" checked aria-checked="true" />
+            4 x 6 inch print - $5
+          </label>
+          <label for="print-5x7">
+            <input type="radio" id="print-5x7" name="print-option" value="5x7" aria-checked="false" />
+            5 x 7 inch print - $8
+          </label>
+          <label for="print-8x10">
+            <input type="radio" id="print-8x10" name="print-option" value="8x10" aria-checked="false" />
+            8 x 10 inch print - $12
+          </label>
+        </form>
+      </div>
+
+      <div class="payment-section" aria-label="Choose payment method">
+        <p style="font-weight:600; margin-bottom: 0.5rem; color: var(--pink);">Select Payment Method</p>
+        <form id="payment-method-form" class="payment-methods" role="radiogroup" aria-label="Choose payment method">
+          <label>
+            <input type="radio" name="payment-method" value="creditcard" checked aria-checked="true" />
+            Credit Card
+          </label>
+          <label>
+            <input type="radio" name="payment-method" value="paypal" aria-checked="false" />
+            PayPal
+          </label>
+          <label>
+            <input type="radio" name="payment-method" value="googlepay" aria-checked="false" />
+            Google Pay
+          </label>
+        </form>
+      </div>
+
+      <form id="creditcard-form" class="payment-form" aria-label="Credit card payment form">
+        <label for="cc-name">Cardholder Name</label>
+        <input type="text" id="cc-name" name="cc-name" autocomplete="cc-name" placeholder="John Doe" required aria-required="true" />
+        <label for="cc-number">Card Number</label>
+        <input type="text" id="cc-number" name="cc-number" autocomplete="cc-number" inputmode="numeric" placeholder="1234 5678 9012 3456" required aria-required="true" pattern="\\d{13,19}" />
+        <label for="cc-expiration">Expiration Date</label>
+        <input type="text" id="cc-expiration" name="cc-expiration" autocomplete="cc-exp" placeholder="MM/YY" required aria-required="true" pattern="(0[1-9]|1[0-2])\\/\\d{2}" />
+        <label for="cc-cvc">CVC</label>
+        <input type="text" id="cc-cvc" name="cc-cvc" autocomplete="cc-csc" inputmode="numeric" placeholder="123" required aria-required="true" pattern="\\d{3,4}" />
+      </form>
+
+      <div id="other-payment-info" style="color: var(--pink); font-weight: 600; padding: 1rem; background: #334155; border-radius: 12px; display: none;">
+        <!-- Info text for PayPal and Google Pay -->
+      </div>
+
+      <button id="pay-btn" class="pay-btn" aria-label="Pay now for your selected print">Pay Now</button>
+      <div id="payment-success" class="success-message" role="alert" style="display:none;">Payment successful! Thank you for your order.</div>
+      <div id="payment-error" class="error-message" role="alert" style="display:none;"></div>
+    </section>
+  </main>
+
+<script>
+  // Application state
+  const appState = {
+    user: null,
+    currentPage: 'login',
+    videoStream: null,
+    appliedFilter: 'none',
+    selfieCanvas: null,
+    selfieData: null, // dataURL of selfie image with applied filter
+  };
+
+  // Page elements
+  const pages = {
+    login: document.getElementById('login-page'),
+    signup: document.getElementById('signup-page'),
+    camera: document.getElementById('camera-page'),
+    payment: document.getElementById('payment-page'),
+  };
+
+  const navButtonsContainer = document.getElementById('nav-buttons');
+  const userInfo = document.getElementById('user-info');
+
+  // Payment page elements
+  const paymentMethodForm = document.getElementById('payment-method-form');
+  const creditCardForm = document.getElementById('creditcard-form');
+  const otherPaymentInfo = document.getElementById('other-payment-info');
+  const payBtn = document.getElementById('pay-btn');
+  const paymentSuccessMsg = document.getElementById('payment-success');
+  const paymentErrorMsg = document.getElementById('payment-error');
+  const paymentSelfiePreview = document.getElementById('payment-selfie-preview');
+
+  // Show only current page and focus the main container for screen readers
+  function showPage(page) {
+    Object.keys(pages).forEach(p => {
+      pages[p].classList.toggle('active', p === page);
+    });
+    appState.currentPage = page;
+    updateNav();
+    // Focus the main content container for accessibility
+    setTimeout(() => {
+      document.getElementById('app').focus();
+    }, 100);
+  }
+
+  // Load users from localStorage
+  function loadUsers() {
+    let users = localStorage.getItem('blinktwice-users');
+    return users ? JSON.parse(users) : {};
+  }
+
+  // Save users to localStorage
+  function saveUsers(users) {
+    localStorage.setItem('blinktwice-users', JSON.stringify(users));
+  }
+
+  // Save logged in user to localStorage
+  function saveLoggedInUser(user) {
+    localStorage.setItem('blinktwice-logged-in-user', JSON.stringify(user));
+    appState.user = user;
+  }
+
+  // Get logged in user from localStorage
+  function getLoggedInUser() {
+    let user = localStorage.getItem('blinktwice-logged-in-user');
+    return user ? JSON.parse(user) : null;
+  }
+
+  // Clear logged in user from localStorage
+  function logoutUser() {
+    localStorage.removeItem('blinktwice-logged-in-user');
+    appState.user = null;
+    appState.selfieData = null;
+    if (appState.videoStream) {
+      try {
+        appState.videoStream.getTracks().forEach(track => track.stop());
+      } catch (e) {
+        // ignore
+      }
+      appState.videoStream = null;
+    }
+  }
+
+  // Update navigation buttons based on auth state & current page
+  function updateNav() {
+    navButtonsContainer.innerHTML = '';
+    userInfo.style.display = 'none';
+    if (appState.user) {
+      userInfo.style.display = 'block';
+      userInfo.textContent = `Welcome, ${appState.user.name}!`;
+      // Show buttons: Camera, Logout
+      const cameraBtn = createNavButton('Camera', () => {
+        startCameraPage();
+      });
+      const logoutBtn = createNavButton('Logout', () => {
+        logoutUser();
+        showPage('login');
+      });
+      navButtonsContainer.appendChild(cameraBtn);
+      navButtonsContainer.appendChild(logoutBtn);
+    } else {
+      // Show buttons: Login, Signup
+      if (appState.currentPage !== 'login') {
+        const loginBtn = createNavButton('Login', () => showPage('login'));
+        navButtonsContainer.appendChild(loginBtn);
+      }
+      if (appState.currentPage !== 'signup') {
+        const signupBtn = createNavButton('Sign Up', () => showPage('signup'));
+        navButtonsContainer.appendChild(signupBtn);
+      }
+    }
+  }
+
+  function createNavButton(text, onClick) {
+    const btn = document.createElement('button');
+    btn.textContent = text;
+    btn.type = 'button';
+    btn.addEventListener('click', onClick);
+    return btn;
+  }
+
+  // Login logic
+  const loginForm = document.getElementById('login-form');
+  const loginErrorMsg = document.getElementById('login-error');
+  loginForm.addEventListener('submit', e => {
+    e.preventDefault();
+    loginErrorMsg.style.display = 'none';
+    const email = loginForm['login-email'].value.trim().toLowerCase();
+    const password = loginForm['login-password'].value;
+    const users = loadUsers();
+    if (!users[email]) {
+      loginErrorMsg.textContent = 'No user found with this email.';
+      loginErrorMsg.style.display = 'block';
+      return;
+    }
+    if (users[email].password !== password) {
+      loginErrorMsg.textContent = 'Incorrect password.';
+      loginErrorMsg.style.display = 'block';
+      return;
+    }
+    saveLoggedInUser(users[email]);
+    loginForm.reset();
+    startCameraPage();
+  });
+
+  // Sign up logic
+  const signupForm = document.getElementById('signup-form');
+  const signupErrorMsg = document.getElementById('signup-error');
+  const signupSuccessMsg = document.getElementById('signup-success');
+  signupForm.addEventListener('submit', e => {
+    e.preventDefault();
+    signupErrorMsg.style.display = 'none';
+    signupSuccessMsg.style.display = 'none';
+    const name = signupForm['signup-name'].value.trim();
+    const email = signupForm['signup-email'].value.trim().toLowerCase();
+    const password = signupForm['signup-password'].value;
+    if (name.length < 2) {
+      signupErrorMsg.textContent = 'Name must be at least 2 characters.';
+      signupErrorMsg.style.display = 'block';
+      return;
+    }
+    if (password.length < 6) {
+      signupErrorMsg.textContent = 'Password must be at least 6 characters.';
+      signupErrorMsg.style.display = 'block';
+      return;
+    }
+    const users = loadUsers();
+    if (users[email]) {
+      signupErrorMsg.textContent = 'Email already registered.';
+      signupErrorMsg.style.display = 'block';
+      return;
+    }
+    // Save user
+    users[email] = { name, email, password };
+    saveUsers(users);
+    signupSuccessMsg.textContent = 'Signup successful! You can now log in.';
+    signupSuccessMsg.style.display = 'block';
+    signupForm.reset();
+  });
+
+  // Link navigation for login/signup forms
+  document.getElementById('to-signup-link').addEventListener('click', e => {
+    e.preventDefault();
+    showPage('signup');
+  });
+  document.getElementById('to-login-link').addEventListener('click', e => {
+    e.preventDefault();
+    showPage('login');
+  });
+
+  // Camera and filters logic
+  const video = document.getElementById('video');
+  const canvas = document.getElementById('canvas');
+  const captureBtn = document.getElementById('capture-btn');
+  const retakeBtn = document.getElementById('retake-btn');
+  const toPaymentBtn = document.getElementById('to-payment-btn');
+  const filtersContainer = document.getElementById('filters');
+
+  // Filter options with CSS filter values
+  const filters = [
+    { name: 'None', filter: 'none' },
+    { name: 'Grayscale', filter: 'grayscale(100%)' },
+    { name: 'Sepia', filter: 'sepia(80%)' },
+    { name: 'Invert', filter: 'invert(100%)' },
+    { name: 'Blur', filter: 'blur(2px)' },
+    { name: 'Brightness', filter: 'brightness(1.3)' },
+    { name: 'Contrast', filter: 'contrast(1.5)' },
+    { name: 'Hue Rotate', filter: 'hue-rotate(90deg)' },
+    { name: 'Saturate', filter: 'saturate(2)' },
+  ];
+
+  // Initialize filters buttons
+  function initFilters() {
+    filtersContainer.innerHTML = '';
+    filters.forEach((f, idx) => {
+      const btn = document.createElement('button');
+      btn.textContent = f.name;
+      btn.type = 'button';
+      btn.setAttribute('role', 'radio');
+      btn.setAttribute('aria-checked', f.filter === appState.appliedFilter ? 'true' : 'false');
+      btn.tabIndex = f.filter === appState.appliedFilter ? 0 : -1;
+      if (f.filter === appState.appliedFilter) btn.classList.add('active');
+      btn.addEventListener('click', () => {
+        applyFilter(f.filter);
+        filtersContainer.querySelectorAll('button').forEach(b => {
+          b.classList.remove('active');
+          b.setAttribute('aria-checked', 'false');
+          b.tabIndex = -1;
+        });
+        btn.classList.add('active');
+        btn.setAttribute('aria-checked', 'true');
+        btn.tabIndex = 0;
+        btn.focus();
+      });
+      // Keyboard navigation support within radio group (left/right arrows)
+      btn.addEventListener('keydown', e => {
+        const buttons = Array.from(filtersContainer.querySelectorAll('button'));
+        let idx = buttons.indexOf(btn);
+        if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+          e.preventDefault();
+          let nextIdx = (idx + 1) % buttons.length;
+          buttons[nextIdx].click();
+        } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+          e.preventDefault();
+          let prevIdx = (idx - 1 + buttons.length) % buttons.length;
+          buttons[prevIdx].click();
+        }
+      });
+      filtersContainer.appendChild(btn);
+    });
+  }
+
+  // Apply filter to video or canvas
+  function applyFilter(filter) {
+    appState.appliedFilter = filter;
+    if (appState.selfieData) {
+      // Canvas with baked filter applied; canvas filter is kept none but image data already filtered.
+      canvas.style.filter = 'none';
+    } else {
+      // Apply to video element live preview
+      video.style.filter = filter;
+    }
+  }
+
+  // Start camera and show camera page
+  async function startCameraPage() {
+    showPage('camera');
+    userInfo.style.display = 'block';
+    appState.selfieData = null;
+    canvas.style.display = 'none';
+    video.style.display = 'block';
+    retakeBtn.style.display = 'none';
+    toPaymentBtn.style.display = 'none';
+    captureBtn.style.display = 'inline-block';
+    appState.appliedFilter = 'none';
+    applyFilter('none');
+    initFilters();
+    try {
+      if (appState.videoStream) {
+        appState.videoStream.getTracks().forEach(track => track.stop());
+        appState.videoStream = null;
+      }
+      const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' }, audio: false });
+      video.srcObject = stream;
+      appState.videoStream = stream;
+      video.setAttribute('tabindex', '0');
+      video.focus();
+    } catch (err) {
+      alert('Could not access camera: ' + err.message);
+    }
+  }
+
+  // Capture selfie from video with filter applied
+  function captureSelfie() {
+    const width = video.videoWidth;
+    const height = video.videoHeight;
+    canvas.width = width;
+    canvas.height = height;
+    const ctx = canvas.getContext('2d');
+    ctx.filter = appState.appliedFilter;
+    ctx.drawImage(video, 0, 0, width, height);
+    const dataURL = canvas.toDataURL('image/png');
+    appState.selfieData = dataURL;
+    // Show canvas with captured image and hide video
+    canvas.style.display = 'block';
+    video.style.display = 'none';
+    captureBtn.style.display = 'none';
+    retakeBtn.style.display = 'inline-block';
+    toPaymentBtn.style.display = 'inline-block';
+    canvas.focus();
+  }
+
+  // Retake selfie: clear captured image, resume video feed
+  function retakeSelfie() {
+    appState.selfieData = null;
+    canvas.style.display = 'none';
+    video.style.display = 'block';
+    retakeBtn.style.display = 'none';
+    toPaymentBtn.style.display = 'none';
+    captureBtn.style.display = 'inline-block';
+    applyFilter(appState.appliedFilter || 'none');
+    video.focus();
+  }
+
+  captureBtn.addEventListener('click', captureSelfie);
+  retakeBtn.addEventListener('click', retakeSelfie);
+  toPaymentBtn.addEventListener('click', () => {
+    if (!appState.selfieData) {
+      alert('Please take a selfie first!');
+      return;
+    }
+    showPage('payment');
+    drawSelfieOnPayment();
+    resetPaymentPage();
+  });
+
+  // Payment page logic
+
+  // Show the selfie preview on payment page
+  function drawSelfieOnPayment() {
+    paymentSelfiePreview.src = appState.selfieData;
+  }
+
+  // Reset payment page inputs and UI
+  function resetPaymentPage() {
+    paymentSuccessMsg.style.display = 'none';
+    paymentErrorMsg.style.display = 'none';
+    payBtn.disabled = false;
+    payBtn.textContent = 'Pay Now';
+
+    // Reset payment method to credit card
+    const methodRadios = paymentMethodForm.querySelectorAll('input[name="payment-method"]');
+    methodRadios.forEach(r => {
+      r.checked = r.value === 'creditcard';
+      r.setAttribute('aria-checked', r.checked ? 'true' : 'false');
+    });
+    showPaymentMethodUI('creditcard');
+
+    // Clear credit card fields
+    creditCardForm.reset();
+
+    payBtn.focus();
+  }
+
+  // Show/hide payment form sections based on selected method
+  function showPaymentMethodUI(method) {
+    if (method === 'creditcard') {
+      creditCardForm.style.display = 'flex';
+      otherPaymentInfo.style.display = 'none';
+    } else {
+      creditCardForm.style.display = 'none';
+      otherPaymentInfo.style.display = 'block';
+      otherPaymentInfo.textContent = method === 'paypal'
+        ? 'You will be redirected to PayPal to complete your payment after clicking Pay Now.'
+        : 'You will be prompted to complete the payment with Google Pay after clicking Pay Now.';
+    }
+  }
+
+  // Update aria-checked when payment method changes for accessibility
+  paymentMethodForm.addEventListener('change', e => {
+    if (e.target.name === 'payment-method') {
+      const method = e.target.value;
+      const radios = paymentMethodForm.querySelectorAll('input[name="payment-method"]');
+      radios.forEach(r => r.setAttribute('aria-checked', r === e.target ? 'true' : 'false'));
+      showPaymentMethodUI(method);
+    }
+  });
+
+  // Validate credit card form (basic)
+  function validateCreditCardForm() {
+    // Use simple pattern matching from HTML attributes
+    return creditCardForm.checkValidity();
+  }
+
+  payBtn.addEventListener('click', () => {
+    paymentSuccessMsg.style.display = 'none';
+    paymentErrorMsg.style.display = 'none';
+
+    if (!appState.selfieData) {
+      paymentErrorMsg.textContent = 'No selfie image found. Please go back and take a selfie.';
+      paymentErrorMsg.style.display = 'block';
+      return;
+    }
+
+    const selectedMethod = paymentMethodForm.querySelector('input[name="payment-method"]:checked')?.value;
+
+    if (!selectedMethod) {
+      paymentErrorMsg.textContent = 'Please select a payment method.';
+      paymentErrorMsg.style.display = 'block';
+      return;
+    }
+
+    if (selectedMethod === 'creditcard') {
+      if (!validateCreditCardForm()) {
+        paymentErrorMsg.textContent = 'Please fill out all credit card fields correctly.';
+        paymentErrorMsg.style.display = 'block';
+        return;
+      }
+    }
+
+    // Simulate payment processing
+    payBtn.disabled = true;
+    payBtn.textContent = 'Processing...';
+    setTimeout(() => {
+      payBtn.disabled = false;
+      payBtn.textContent = 'Pay Now';
+      paymentSuccessMsg.style.display = 'block';
+      paymentSuccessMsg.focus();
+    }, 2000);
+  });
+
+  // On page load, check if logged in and show appropriate page
+  window.addEventListener('load', () => {
+    const loggedInUser = getLoggedInUser();
+    if (loggedInUser) {
+      appState.user = loggedInUser;
+      startCameraPage();
+    } else {
+      showPage('login');
+    }
+  });
+</script>
+</body>
+</html>
